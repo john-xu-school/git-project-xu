@@ -15,13 +15,14 @@ public class Git{
     public static void initRepo(){
         
         try{
-            Path path = Paths.get("git");
-            if(Files.exists(path)){
+            Path pathGit = Paths.get("git");
+            Path pathObjects = Paths.get("git/objects");
+            if(Files.exists(pathGit)){
                 System.out.println ("Git Repository already exists");
                 return;
             }
-            Files.createDirectories(path);
-            Files.write(Paths.get("git/objects"), "".getBytes(StandardCharsets.UTF_8));
+            Files.createDirectories(pathGit);
+            Files.createDirectories(pathObjects);
             Files.write(Paths.get("git/index"), "".getBytes(StandardCharsets.UTF_8));
         } catch (IOException e){
             e.printStackTrace();
@@ -36,6 +37,25 @@ public class Git{
             .forEach(File::delete);
         }
         catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private static String getBlobName(Path path){
+        try{
+            return "" + Files.readAllBytes(path).hashCode();
+
+        } catch (IOException e){
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    public static void makeBlob(Path path){
+        String name = getBlobName(path);
+        try{
+            Files.write(Paths.get("git/"+name), Files.readAllBytes(path));
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
