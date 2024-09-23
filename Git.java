@@ -4,8 +4,6 @@ import java.nio.file.*;
 import java.util.Comparator;
 import java.util.stream.Stream;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
