@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 public class GitTester {
      public static void main (String[] args){
         Git repo = new Git(true);
+        String fileSeperator = File.separator;
         Path gitPath = Paths.get("git");
+
         if (Files.exists(gitPath)) repo.resetInit(gitPath);
         repo.initRepo();
         repo.initRepo();
@@ -16,9 +18,9 @@ public class GitTester {
         Path fileToBlobPath = Paths.get("README.md");
         Path fileToBlobPath2 = Paths.get(".gitignore");
 
-        //reseting objects/
-        Path blobPath = Paths.get("git/objects/" + repo.getBlobName(fileToBlobPath));
-        Path blobPath2 = Paths.get("git/objects/" + repo.getBlobName(fileToBlobPath2));
+        //reseting objects
+        Path blobPath = Paths.get("git"+fileSeperator+"objects/" + repo.getBlobName(fileToBlobPath));
+        Path blobPath2 = Paths.get("git"+fileSeperator+"objects"+fileSeperator+ repo.getBlobName(fileToBlobPath2));
         if (Files.exists(blobPath )) {
             try{
                 Files.delete(blobPath);
@@ -37,7 +39,7 @@ public class GitTester {
         }
         //resetting index
         try{
-            Files.write(Paths.get("git/index"), "".getBytes());
+            Files.write(Paths.get("git"+fileSeperator+"index"), "".getBytes());
         }
         catch (IOException e){
             e.printStackTrace();
@@ -72,7 +74,7 @@ public class GitTester {
 
         String indexContents = "";
         try{
-            indexContents = Files.readString(Paths.get("git/index"));
+            indexContents = Files.readString(Paths.get("git"+fileSeperator+"index"));
         }
         catch (IOException e){
             e.printStackTrace();

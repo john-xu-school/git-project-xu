@@ -10,22 +10,24 @@ import java.security.NoSuchAlgorithmException;
 
 public class Git{
     public boolean isZip = false;
+    public String fileSeperator = "";
     public Git(boolean isZip){
         this.isZip = isZip;
+        fileSeperator = File.separator;
     }
 
     //initialize repository by creating git folder, objects sub folder, and index file
     public void initRepo(){
         try{
             Path pathGit = Paths.get("git");
-            Path pathObjects = Paths.get("git/objects");
+            Path pathObjects = Paths.get("git"+fileSeperator+"objects");
             if(Files.exists(pathGit)){
                 System.out.println ("Git Repository already exists");
                 return;
             }
             Files.createDirectories(pathGit);
             Files.createDirectories(pathObjects);
-            Files.write(Paths.get("git/index"), "".getBytes(StandardCharsets.UTF_8));
+            Files.write(Paths.get("git"+fileSeperator+"index"), "".getBytes(StandardCharsets.UTF_8));
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -81,7 +83,7 @@ public class Git{
             if (isZip){
                 written = compress(written);
             }
-            Files.write(Paths.get("git/objects/"+name), written);
+            Files.write(Paths.get("git"+fileSeperator+"objects"+fileSeperator+name), written);
             updateIndex(path);
         } catch (IOException e){
             e.printStackTrace();
@@ -93,7 +95,7 @@ public class Git{
         String name = getBlobName(path);
         String appendString = name + " " + path.getFileName() + "\n";
         try{
-            Files.write(Paths.get("git/index"), appendString.getBytes(), StandardOpenOption.APPEND);
+            Files.write(Paths.get("git"+fileSeperator+"index"), appendString.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException e){
             e.printStackTrace();
         }
