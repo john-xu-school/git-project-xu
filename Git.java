@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class Git{
     public boolean isZip = false;
+    public boolean includeHidden = true;
     public String fileSeperator = "";
     public Git(boolean isZip){
         this.isZip = isZip;
@@ -95,7 +96,7 @@ public class Git{
     }
 
     //updates the index file by adding a new line with entry from blob and file name at variable path 
-    private void updateIndex(Path path, Path root, Path filePath, String type) throws IOException{ //path to actual file
+    private void updateIndex(Path path, Path root, Path filePath, String type) throws IOException{
         String appendString = "";
         String name = getBlobName(path);
         File file = new File ("git"+fileSeperator+"index");
@@ -109,7 +110,15 @@ public class Git{
     }
 
    //creates a tree blob and blobs of all the files inside it, updates everything to index
-    public String createTree(Path directoryPath, Path root) throws IOException{
+    public String createTree(Path directoryPath, Path root) throws IOException {
+        if (!Files.exists(directoryPath)) {
+            throw new FileNotFoundException("the directory path '" + directoryPath.toString() + "' doesn't exist!");
+        }
+
+        if (!Files.isDirectory(directoryPath)) {
+            throw new NotDirectoryException("the path '" + directoryPath.toString() + " isn't a directory!");
+        }
+
         ArrayList<String> treeEntries = new ArrayList<>();
 
         try(DirectoryStream<Path> stream = Files.newDirectoryStream(directoryPath)){
@@ -117,18 +126,29 @@ public class Git{
 
             while (iterator.hasNext()){ 
                 Path entry = iterator.next();
-                if(Files.isDirectory(entry)){
-                    String subTreeHash = createTree(entry, root);
-                    String treeEntry = "tree " + subTreeHash + " " + directoryPath.relativize(entry).toString();
-                    treeEntries.add(treeEntry);
-        
-                } else if (Files.isRegularFile(entry)){
-                    makeBlob(entry, root.getParent());
-                    String blobHash = getBlobName(entry);
-                    String blobEntry = "blob " + blobHash + " " + directoryPath.relativize(entry).toString();
-                    treeEntries.add(blobEntry);
+
+                if (!includeHidden && entry.getFileName().toString().startsWith(".")) {
+                    continue;
+                }
+                
+                try{
+                    if(Files.isDirectory(entry)){
+                        String subTreeHash = createTree(entry, root);
+                        String treeEntry = "tree " + subTreeHash + " " + directoryPath.relativize(entry).toString();
+                        treeEntries.add(treeEntry);
+            
+                    } else if (Files.isRegularFile(entry)){
+                        makeBlob(entry, root.getParent());
+                        String blobHash = getBlobName(entry);
+                        String blobEntry = "blob " + blobHash + " " + directoryPath.relativize(entry).toString();
+                        treeEntries.add(blobEntry);
+                    }
+                } catch (AccessDeniedException e){
+                    System.out.println("permission denied for: " + entry.toString());
                 }
             }
+        } catch (AccessDeniedException e){
+            System.out.println("permission denied for directory: " + directoryPath.toString());
         }
         StringBuilder tree = new StringBuilder();
 

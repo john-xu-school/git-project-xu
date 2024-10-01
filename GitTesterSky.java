@@ -9,7 +9,6 @@ public class GitTesterSky {
         String fileSeperator = File.separator;
 
         Path testPath = Paths.get("/Users/skystubbeman/Desktop/tester_folder");
-        //Path fileTestPath = Paths.get("/Users/skystubbeman/Desktop/tester_folder/test2.txt");
 
         repo.createTree(testPath, testPath);
     }
