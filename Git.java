@@ -116,16 +116,16 @@ public class Git{
             Iterator<Path> iterator = stream.iterator();
 
             while (iterator.hasNext()){ 
-                Path entry = iterator.next();    
+                Path entry = iterator.next();
                 if(Files.isDirectory(entry)){
-                    String subTreeHash = createTree(entry, directoryPath); 
-                    String treeEntry = "tree : " + subTreeHash + " : " + root.relativize(entry).toString(); 
+                    String subTreeHash = createTree(entry, root);
+                    String treeEntry = "tree " + subTreeHash + " " + directoryPath.relativize(entry).toString();
                     treeEntries.add(treeEntry);
         
                 } else if (Files.isRegularFile(entry)){
                     makeBlob(entry, root.getParent());
                     String blobHash = getBlobName(entry);
-                    String blobEntry = "blob " + blobHash + " " + root.relativize(entry).toString();
+                    String blobEntry = "blob " + blobHash + " " + directoryPath.relativize(entry).toString();
                     treeEntries.add(blobEntry);
                 }
             }
@@ -133,22 +133,22 @@ public class Git{
         StringBuilder tree = new StringBuilder();
 
         File tempFile = new File("./", "tempFile");
-        FileWriter fw = new FileWriter(tempFile);
 
         if (!treeEntries.isEmpty()){
+            FileWriter fw = new FileWriter(tempFile);
             for (String entry : treeEntries){
                 tree.append(entry);
                 tree.append("\n");
             }
             fw.write(tree.toString());
+            fw.close();
         }
 
         String hashText = getBlobName(Paths.get(tempFile.getPath()));
         File realTree = new File("git"+fileSeperator+"objects", hashText);
         tempFile.renameTo(realTree);
-
         updateIndex(Paths.get(realTree.getPath()), root.getParent(), directoryPath, "tree");
-        fw.close();
+        
         return hashText;
     }
 
