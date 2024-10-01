@@ -13,14 +13,14 @@ public class GitTester {
         repo.initRepo();
         repo.initRepo();
 
-        
-
+        Path root = Paths.get("./");
         Path fileToBlobPath = Paths.get("README.md");
         Path fileToBlobPath2 = Paths.get(".gitignore");
 
         //reseting objects
         Path blobPath = Paths.get("git"+fileSeperator+"objects/" + repo.getBlobName(fileToBlobPath));
         Path blobPath2 = Paths.get("git"+fileSeperator+"objects"+fileSeperator+ repo.getBlobName(fileToBlobPath2));
+
         if (Files.exists(blobPath )) {
             try{
                 Files.delete(blobPath);
@@ -46,8 +46,8 @@ public class GitTester {
         }
         
         //recreating blobs
-        repo.makeBlob(fileToBlobPath);
-        repo.makeBlob(fileToBlobPath2);
+        repo.makeBlob(fileToBlobPath, root);
+        repo.makeBlob(fileToBlobPath2, root);
 
         //testing blob name
         File blob1 = new File(blobPath.toString());
@@ -79,7 +79,7 @@ public class GitTester {
         catch (IOException e){
             e.printStackTrace();
         }
-        
+    
 
         if (expectedIndexContents.equals(indexContents)){
             System.out.println("Index Updated Correctly");
@@ -87,6 +87,5 @@ public class GitTester {
         else{
             System.out.println("Index Updated INCORRECTLY");
         }
-
     }
 }
