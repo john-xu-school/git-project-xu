@@ -2,90 +2,49 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 public class GitTester {
      public static void main (String[] args){
-        Git repo = new Git(true);
         String fileSeperator = File.separator;
+        Path testPath = Paths.get("."+fileSeperator+"test");
+        Git repo = new Git(false, testPath);
         Path gitPath = Paths.get("git");
-
-        if (Files.exists(gitPath)) repo.resetInit(gitPath);
-        repo.initRepo();
-        repo.initRepo();
-
-        Path root = Paths.get("./");
-        Path fileToBlobPath = Paths.get("README.md");
-        Path fileToBlobPath2 = Paths.get(".gitignore");
-
-        //reseting objects
-        Path blobPath = Paths.get("git"+fileSeperator+"objects/" + repo.getBlobName(fileToBlobPath));
-        Path blobPath2 = Paths.get("git"+fileSeperator+"objects"+fileSeperator+ repo.getBlobName(fileToBlobPath2));
-
-        if (Files.exists(blobPath )) {
-            try{
-                Files.delete(blobPath);
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
-        }
-        if(Files.exists(blobPath2)){
-            try{
-                Files.delete(blobPath2);
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
-        }
-        //resetting index
-        try{
-            Files.write(Paths.get("git"+fileSeperator+"index"), "".getBytes());
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
         
-        //recreating blobs
-        repo.makeBlob(fileToBlobPath, root);
-        repo.makeBlob(fileToBlobPath2, root);
 
-        //testing blob name
-        File blob1 = new File(blobPath.toString());
-        File blob2 = new File(blobPath2.toString());
-
-        if (blob1.getName().equals(repo.getBlobName(fileToBlobPath))){
-            System.out.println("Blob 1 name correct");
-        }
-        else{
-            System.out.println("Blob 2 name INCORRECT");
-        }
-
-        if (blob2.getName().equals(repo.getBlobName(fileToBlobPath2))){
-            System.out.println("Blob 2 name correct");
-        }
-        else{
-            System.out.println("Blob 2 name INCORRECT");
-        }
-
-        //Check index content
-        String expectedIndexContents = repo.getBlobName(fileToBlobPath) + " " + fileToBlobPath.getFileName() 
-        + "\n" + repo.getBlobName(fileToBlobPath2) + " " + 
-        fileToBlobPath2.getFileName() + "\n";
-
-        String indexContents = "";
+        if (Files.exists(gitPath)) repo.removeDir(gitPath);
+        repo.initRepo();
+        repo.initRepo();
+        
         try{
-            indexContents = Files.readString(Paths.get("git"+fileSeperator+"index"));
+            repo.stage(testPath, testPath);
+            //repo.createTree(testPath, testPath);
         }
         catch (IOException e){
             e.printStackTrace();
         }
-    
+        repo.commit( fileSeperator, fileSeperator);
 
-        if (expectedIndexContents.equals(indexContents)){
-            System.out.println("Index Updated Correctly");
+
+        try{
+            Path testFilePathToBeReset = Files.write(Paths.get("test"+fileSeperator+"ballw.txt"), "basketball".getBytes(StandardCharsets.UTF_8));
+            repo.stage(testPath, testPath);
+
+            repo.commit( fileSeperator, fileSeperator);
+
+            testFilePathToBeReset.toFile().delete(); //to test repeatedly
         }
-        else{
-            System.out.println("Index Updated INCORRECTLY");
+        catch (IOException e){
+           e.printStackTrace();
         }
+
+        testPath = Paths.get("."+fileSeperator+"newTest");
+
+        if (Files.exists(testPath)) repo.removeDir(testPath);
+
+        repo.setWorkingDirectory(testPath);
+
+        repo.checkout(repo.latestCommitHash);
+        
     }
 }
